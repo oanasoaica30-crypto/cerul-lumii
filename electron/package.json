@@ -1,0 +1,49 @@
+{
+  "name": "cerul-lumii",
+  "productName": "Cerul Lumii",
+  "version": "1.0.0",
+  "description": "Cerul Lumii — joc de strategie cu companii aeriene, online cu prietenii",
+  "author": "Damian",
+  "license": "UNLICENSED",
+  "private": true,
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "start:dev": "electron . --dev --multi",
+    "dist:win": "electron-builder --win nsis --x64 --publish never"
+  },
+  "devDependencies": {
+    "electron": "44.5.1",
+    "electron-builder": "26.15.3"
+  },
+  "build": {
+    "appId": "ro.damian.cerullumii",
+    "productName": "Cerul Lumii",
+    "copyright": "© 2026 Damian",
+    "directories": { "output": "dist", "buildResources": "build" },
+    "files": ["main.js", "preload.js", "app/**/*", "!app/index.template.html"],
+    "win": {
+      "target": [{ "target": "nsis", "arch": ["x64"] }],
+      "icon": "build/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowElevation": true,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": "always",
+      "createStartMenuShortcut": true,
+      "shortcutName": "Cerul Lumii",
+      "installerIcon": "build/icon.ico",
+      "uninstallerIcon": "build/icon.ico",
+      "installerHeaderIcon": "build/icon.ico",
+      "installerLanguages": ["ro_RO"],
+      "language": "1048",
+      "multiLanguageInstaller": false,
+      "runAfterFinish": true,
+      "deleteAppDataOnUninstall": false,
+      "uninstallDisplayName": "Cerul Lumii",
+      "artifactName": "Cerul-Lumii-Setup-${version}.${ext}"
+    }
+  }
+}

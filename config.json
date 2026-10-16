@@ -1,0 +1,4 @@
+{
+  "defaultServer": "wss://cerul-lumii-server.onrender.com",
+  "_comment": "defaultServer = adresa serverului tău de pe Render (wss://NUME.onrender.com). După ce o schimbi: node scripts/sync-game.mjs, apoi un build nou."
+}

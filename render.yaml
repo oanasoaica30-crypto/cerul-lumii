@@ -1,0 +1,20 @@
+# Render Blueprint — the Cerul Lumii server (free plan).
+# Render -> New -> Blueprint -> pick this GitHub repo. It asks for DATABASE_URL: paste the Neon connection string
+# (free Postgres). Without it, accounts/friends/tables live on the instance disk, which Render FREE wipes
+# every time the server sleeps (after 15 min with nobody connected) or redeploys.
+services:
+  - type: web
+    name: cerul-lumii-server
+    runtime: node
+    plan: free
+    region: frankfurt
+    rootDir: server
+    buildCommand: npm ci
+    startCommand: node server.js
+    healthCheckPath: /healthz
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: DATABASE_URL
+        sync: false

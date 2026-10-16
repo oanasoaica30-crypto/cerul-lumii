@@ -1,0 +1,21 @@
+{
+  "name": "cerul-lumii-server",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Server WebSocket pentru Cerul Lumii (mese cu cod, stare partajată, prezență)",
+  "main": "server.js",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "test": "node test/protocol-test.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "ws": "^8.22.0"
+  },
+  "optionalDependencies": {
+    "pg": "^8.23.1"
+  }
+}

@@ -1,0 +1,77 @@
+# Builds the Windows installer (Cerul-Lumii-Setup.exe) on a Windows machine at GitHub and attaches it
+# to a GitHub Release, so friends get a download link:
+#   https://github.com/<USER>/<REPO>/releases/latest/download/Cerul-Lumii-Setup.exe
+# Start it: GitHub -> Actions -> "Build Windows installer" -> Run workflow (type the version, e.g. 1.0.1),
+# or push a tag:  git tag v1.0.1 && git push origin v1.0.1
+name: Build Windows installer
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Versiunea (ex. 1.0.1) — mereu mai mare decât cea de dinainte"
+        required: true
+        default: "1.0.0"
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  server-tests:
+    runs-on: ubuntu-latest
+    defaults: { run: { working-directory: server } }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm, cache-dependency-path: server/package-lock.json }
+      - run: npm ci
+      - run: npm test
+
+  windows:
+    needs: server-tests
+    runs-on: windows-latest
+    defaults: { run: { working-directory: electron, shell: bash } }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm, cache-dependency-path: electron/package-lock.json }
+
+      - name: Version
+        run: |
+          V="${{ github.event.inputs.version }}"
+          if [ -z "$V" ]; then V="${GITHUB_REF_NAME#v}"; fi
+          echo "VERSION=$V" >> "$GITHUB_ENV"
+          npm version "$V" --no-git-tag-version --allow-same-version
+
+      - name: Check game files
+        run: |
+          test -f app/index.html || { echo "electron/app/index.html lipsește: rulează node scripts/sync-game.mjs și fă commit"; exit 1; }
+          test -f app/games/cerul.js && test -f app/core.js && test -f app/shim.js
+
+      - run: npm ci
+
+      - name: Build installer
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: "false"   # no code-signing certificate (Windows SmartScreen will warn)
+        run: npx electron-builder --win nsis --x64 --publish never
+
+      - name: Stable file name
+        run: cp "dist/Cerul-Lumii-Setup-${VERSION}.exe" "dist/Cerul-Lumii-Setup.exe"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Cerul-Lumii-Setup-${{ env.VERSION }}
+          path: electron/dist/Cerul-Lumii-Setup*.exe
+
+      - name: GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="v${VERSION}"
+          if ! gh release view "$TAG" >/dev/null 2>&1; then
+            gh release create "$TAG" --target "${GITHUB_SHA}" --title "Cerul Lumii ${VERSION}" \
+              --notes "Descarcă **Cerul-Lumii-Setup.exe**, deschide-l și urmează pașii. Dacă Windows afișează „Windows a protejat PC-ul”: Mai multe informații → Rulează oricum."
+          fi
+          gh release upload "$TAG" "dist/Cerul-Lumii-Setup-${VERSION}.exe" "dist/Cerul-Lumii-Setup.exe" --clobber

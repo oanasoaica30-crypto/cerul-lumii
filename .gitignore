@@ -1,0 +1,12 @@
+node_modules/
+electron/dist/
+server/data/
+test/out/
+*.log
+.DS_Store
+.env
+.env.*
+*.pem
+*.key
+*.pfx
+*.p12
